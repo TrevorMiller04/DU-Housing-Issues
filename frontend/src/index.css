@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Make floor plan SVGs responsive on all screen sizes */
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* SVG room highlight for rooms with active issues */
+.room--has-issues path,
+.room--has-issues rect,
+.room--has-issues polygon,
+.room--has-issues ellipse {
+  fill: rgba(239, 68, 68, 0.55) !important;
+  stroke: rgba(185, 28, 28, 0.8) !important;
+}
+
+.room--has-issues {
+  cursor: pointer;
+}
+
+/* SVG room selected state (submission form) */
+.room--selected path,
+.room--selected rect,
+.room--selected polygon,
+.room--selected ellipse {
+  fill: rgba(59, 130, 246, 0.55) !important;
+  stroke: rgba(29, 78, 216, 0.8) !important;
+}
+
+/* SVG clickable rooms cursor */
+[id^="Room-"] {
+  cursor: pointer;
+}
+
+[id^="Room-"]:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
