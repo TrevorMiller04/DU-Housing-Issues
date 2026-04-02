@@ -38,6 +38,13 @@ export default function FloorView({ issues, onIssuesChange }) {
     setPanelRoom({ roomId, label: roomLabel, floorId })
   }, [activeRoomIdsMap, issues])
 
+  // Stable callback for the expanded floor — new reference only when the floor
+  // or handleRoomClick changes, NOT on every render. Prevents FloorPlan's
+  // useEffect from re-running infinitely (same fix as EMPTY_SET/EMPTY_COUNTS).
+  const expandedRoomClickHandler = useCallback((roomId) => {
+    if (expandedFloorId) handleRoomClick(expandedFloorId, roomId)
+  }, [expandedFloorId, handleRoomClick])
+
   const expandedFloor = FLOORS.find((f) => f.id === expandedFloorId)
 
   return (
@@ -79,7 +86,7 @@ export default function FloorView({ issues, onIssuesChange }) {
               svgKey={expandedFloor.svgKey}
               activeRoomIds={activeRoomIdsMap[expandedFloor.id]}
               issueCounts={issueCountsMap[expandedFloor.id]}
-              onRoomClick={(roomId) => handleRoomClick(expandedFloor.id, roomId)}
+              onRoomClick={expandedRoomClickHandler}
               mode="expanded"
             />
           </div>

@@ -31,18 +31,28 @@ export default function ListView({ issues, onIssuesChange }) {
   const pendingDeletes = useRef(new Map())
   const [undoCount, setUndoCount] = useState(0)
 
-  // Flush all pending deletes — used on unmount and undo expiry
-  function flushPending() {
+  // Flush all pending deletes — used on unmount, visibilitychange, and undo expiry.
+  // keepalive:true ensures the DELETE requests survive iOS app close/backgrounding.
+  function flushPending(keepalive = false) {
     for (const [id, { timeoutId }] of pendingDeletes.current) {
       clearTimeout(timeoutId)
-      resolveIssue(id).catch(() => {})
+      resolveIssue(id, { keepalive }).catch(() => {})
     }
     pendingDeletes.current.clear()
     setUndoCount(0)
   }
 
-  // Flush on unmount
-  useEffect(() => () => flushPending(), [])
+  // Flush on unmount and when app is hidden (iOS PWA close / background)
+  useEffect(() => {
+    function onVisibilityChange() {
+      if (document.visibilityState === 'hidden') flushPending(true)
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      flushPending(true)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   function scheduleDelete(issue) {
     const timeoutId = setTimeout(() => {

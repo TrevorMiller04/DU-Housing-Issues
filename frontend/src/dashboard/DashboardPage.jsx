@@ -53,15 +53,32 @@ export default function DashboardPage() {
     }
 
     const permission = Notification.permission
-    if (permission === 'granted') {
-      setPushStatus('subscribed')
-    } else if (permission === 'denied') {
+    if (permission === 'denied') {
       setPushStatus('denied')
-    } else {
-      // Check if we've already asked
-      const asked = localStorage.getItem('push-asked')
-      if (!asked) setPushStatus('prompting')
+      return
     }
+
+    if (permission === 'granted') {
+      // Re-register subscription on every mount — ensures the backend always
+      // has a valid subscription even after redeployments or DB clears.
+      navigator.serviceWorker.ready.then((registration) => {
+        return registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        })
+      }).then((subscription) => {
+        return subscribePush(subscription.toJSON())
+      }).then(() => {
+        setPushStatus('subscribed')
+      }).catch(() => {
+        setPushStatus('subscribed') // permission granted, show as subscribed even if re-reg fails
+      })
+      return
+    }
+
+    // permission === 'default' — show prompt if not yet asked
+    const asked = localStorage.getItem('push-asked')
+    if (!asked) setPushStatus('prompting')
   }, [])
 
   async function handleSubscribePush() {

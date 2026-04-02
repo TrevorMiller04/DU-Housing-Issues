@@ -23,11 +23,12 @@ export async function submitIssue(formData) {
   return res.json()
 }
 
-export async function resolveIssue(id) {
+export async function resolveIssue(id, { keepalive = false } = {}) {
   const res = await fetch(`${BASE}/api/issues/${id}`, {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ slug: SLUG }),
+    keepalive,
   })
   if (!res.ok) throw new Error('Failed to resolve issue')
   return res.json()
