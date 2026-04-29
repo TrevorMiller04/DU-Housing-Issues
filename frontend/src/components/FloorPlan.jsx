@@ -27,8 +27,16 @@ export default function FloorPlan({
   mode = 'select',
 }) {
   const containerRef = useRef(null)
+  const innerRef = useRef(null)
   const [badges, setBadges] = useState([])
-  const svgContent = SVG_CONTENT[svgKey]
+
+  // Inject SVG imperatively so React never re-applies dangerouslySetInnerHTML during
+  // reconciliation (which would strip classes applied by the effect below).
+  useEffect(() => {
+    const inner = innerRef.current
+    if (!inner) return
+    inner.innerHTML = SVG_CONTENT[svgKey] || ''
+  }, [svgKey])
 
   useEffect(() => {
     const container = containerRef.current
@@ -147,14 +155,11 @@ export default function FloorPlan({
     }
   }, [svgKey, activeRoomIds, selectedRoomId, onRoomClick, mode, issueCounts])
 
-  if (!svgContent) return null
+  if (!SVG_CONTENT[svgKey]) return null
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <div
-        className="w-full"
-        dangerouslySetInnerHTML={{ __html: svgContent }}
-      />
+      <div ref={innerRef} className="w-full" />
       {badges.map((b) => (
         <div
           key={b.roomId}
