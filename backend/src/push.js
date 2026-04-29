@@ -12,7 +12,7 @@ export async function sendPushToAll(payload) {
 
   for (const row of rows) {
     try {
-      await webpush.sendNotification(row.subscription, JSON.stringify(payload))
+      await webpush.sendNotification(JSON.parse(row.subscription), JSON.stringify(payload))
     } catch (err) {
       // 410 Gone = subscription expired or unsubscribed, clean it up
       if (err.statusCode === 410) {

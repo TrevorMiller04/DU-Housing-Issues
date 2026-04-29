@@ -58,7 +58,7 @@ export default function ListView({ issues, onIssuesChange }) {
     const timeoutId = setTimeout(() => {
       pendingDeletes.current.delete(issue.id)
       setUndoCount(pendingDeletes.current.size)
-      resolveIssue(issue.id).catch(() => {})
+      resolveIssue(issue.id, { keepalive: true }).catch(() => {})
     }, 10000)
 
     pendingDeletes.current.set(issue.id, { issue, timeoutId })

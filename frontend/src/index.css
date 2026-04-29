@@ -22,6 +22,7 @@ svg {
 .room--has-issues polygon,
 .room--has-issues ellipse {
   fill: rgba(239, 68, 68, 0.55) !important;
+  fill-opacity: 1 !important;
   stroke: rgba(185, 28, 28, 0.8) !important;
 }
 
@@ -35,6 +36,7 @@ svg {
 .room--selected polygon,
 .room--selected ellipse {
   fill: rgba(59, 130, 246, 0.55) !important;
+  fill-opacity: 1 !important;
   stroke: rgba(29, 78, 216, 0.8) !important;
 }
 

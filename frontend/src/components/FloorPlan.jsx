@@ -69,6 +69,7 @@ export default function FloorPlan({
     // Compute badge positions in 'expanded' mode
     if (mode === 'expanded' && Object.keys(issueCounts).length > 0) {
       const containerRect = container.getBoundingClientRect()
+      const svgEl = container.querySelector('svg')
       const newBadges = []
 
       roomEls.forEach((el) => {
@@ -76,6 +77,54 @@ export default function FloorPlan({
         const count = issueCounts[roomId]
         if (!count) return
 
+        // Find the first filled path in this room group for accurate hit-testing
+        const fillPath = Array.from(el.querySelectorAll('path')).find(
+          (p) => p.getAttribute('fill') && p.getAttribute('fill') !== 'none'
+        )
+        const geomEl = fillPath ?? el
+
+        if (svgEl && geomEl.isPointInFill && geomEl.getBBox) {
+          const bbox = geomEl.getBBox()
+          const centerX = bbox.x + bbox.width / 2
+          const centerY = bbox.y + bbox.height / 2
+          const pt = svgEl.createSVGPoint()
+
+          // Build candidate offsets: center first, then progressively further out
+          const candidates = [[0, 0]]
+          const steps = 5
+          for (let i = 1; i <= steps; i++) {
+            const d = i / steps
+            candidates.push(
+              [-bbox.width * d / 2, 0], [bbox.width * d / 2, 0],
+              [0, -bbox.height * d / 2], [0, bbox.height * d / 2],
+              [-bbox.width * d / 2, -bbox.height * d / 2],
+              [bbox.width * d / 2, -bbox.height * d / 2],
+              [-bbox.width * d / 2, bbox.height * d / 2],
+              [bbox.width * d / 2, bbox.height * d / 2],
+            )
+          }
+
+          let found = null
+          for (const [dx, dy] of candidates) {
+            pt.x = centerX + dx
+            pt.y = centerY + dy
+            if (geomEl.isPointInFill(pt)) { found = pt; break }
+          }
+
+          if (found) {
+            const ctm = geomEl.getCTM()
+            const pagePt = found.matrixTransform(ctm)
+            newBadges.push({
+              roomId,
+              count,
+              x: pagePt.x - containerRect.left,
+              y: pagePt.y - containerRect.top,
+            })
+            return
+          }
+        }
+
+        // Fallback: bounding rect center
         const rect = el.getBoundingClientRect()
         newBadges.push({
           roomId,

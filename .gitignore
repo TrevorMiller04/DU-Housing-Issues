@@ -25,3 +25,6 @@ npm-debug.log*
 /package.json
 /package-lock.json
 /skills-lock.json
+
+# MCP config (contains API tokens)
+.mcp.json
